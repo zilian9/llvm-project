@@ -13502,18 +13502,18 @@ bool RISCVTargetLowering::isSDNodeSourceOfDivergence(
   case ISD::LOAD: {
     const LoadSDNode *L = cast<LoadSDNode>(N);
     // If load from varstart store frame index, load action is divergent
-    if( auto *Base = dyn_cast<LoadSDNode>(L->getBasePtr()))
-      if(auto *BaseBase = dyn_cast<FrameIndexSDNode>(Base->getOperand(1)))
-        if(BaseBase->getIndex() == getVastartStoreFrameIndex())
-          return true;
+    // if( auto *Base = dyn_cast<LoadSDNode>(L->getBasePtr()))
+    //   if(auto *BaseBase = dyn_cast<FrameIndexSDNode>(Base->getOperand(1)))
+    //     if(BaseBase->getIndex() == getVastartStoreFrameIndex())
+    //       return true;
     return L->getAddressSpace() == RISCVAS::PRIVATE_ADDRESS;
   }
   case ISD::STORE: {
     const StoreSDNode *Store= cast<StoreSDNode>(N);
-    auto &MFI = FLI->MF->getFrameInfo();
-    if(auto *BaseBase = dyn_cast<FrameIndexSDNode>(Store->getOperand(1)))
-      if(MFI.getStackID(BaseBase->getIndex()) == RISCVStackID::SGPRSpill)
-        return false;
+    // auto &MFI = FLI->MF->getFrameInfo();
+    // if(auto *BaseBase = dyn_cast<FrameIndexSDNode>(Store->getOperand(1)))
+    //   if(MFI.getStackID(BaseBase->getIndex()) == RISCVStackID::SGPRSpill)
+    //     return false;
     return Store->getAddressSpace() == RISCVAS::PRIVATE_ADDRESS ||
            Store->getPointerInfo().StackID == RISCVStackID::VGPRSpill;
   }
@@ -13568,7 +13568,8 @@ RISCVTargetLowering::getRegClassFor(MVT VT, bool isDivergent) const {
   const TargetRegisterClass *RC = TargetLoweringBase::getRegClassFor(VT, false);
   const RISCVRegisterInfo *TRI = Subtarget.getRegisterInfo();
   if (!TRI->isSGPRClass(RC) && !isDivergent)
-    return VT == MVT::i32 ? &RISCV::GPRRegClass : &RISCV::GPRF32RegClass;
+    // FIXME: use VGPR for f32 type, cause vmv.vx has problem for f32
+    return VT == MVT::i32 ? &RISCV::GPRRegClass : &RISCV::VGPRRegClass;
   // FIXME: cause we set defalut register class for XlenVT is GPR class
   else if (TRI->isSGPRClass(RC) && isDivergent)
     return &RISCV::VGPRRegClass;

@@ -258,6 +258,14 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     llvm_unreachable("Illegal copy from VGPR to GPRF32");
   }
 
+  // sGPRF32 -> vGPR move
+  // if (RISCV::GPRF32RegClass.contains(SrcReg) &&
+  //     RISCV::VGPRRegClass.contains(DstReg)) {
+  //   BuildMI(MBB, MBBI, DL, get(RISCV::VFMV_S_F), DstReg)
+  //       .addReg(SrcReg, getKillRegState(KillSrc));
+  //   return;
+  // }
+
   // sGPR -> vGPR move
   if (RISCV::GPRRegClass.contains(SrcReg) &&
       RISCV::VGPRRegClass.contains(DstReg)) {
